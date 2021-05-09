@@ -224,24 +224,24 @@ $ export ECS_EXEC_BUCKET_NAME=khaja-aws-ecs-exec-s3-bucket-output-xxxxxxxxxx
     --tasks <TASK-ID>
     ```
   <br />
-1. Let's SSH into the container's shell now with the below command
+1. Let's SSH into the container's shell now with the below command. 
     ``` shell
-    $ aws ecs execute-command  \
-    --region $AWS_REGION \
-    --cluster ecs-exec-demo-cluster \
-    --task ef6260ed8aab49cf926667ab0c52c313 \
-    --container nginx \
-    --command "/bin/bash" \
-    --interactive
-    
-    The Session Manager plugin was installed successfully. Use the AWS CLI to start a session.
-    Starting session with SessionId: ecs-execute-command-0122b68a67f39258e
-    This session is encrypted using AWS KMS.
-    root@ip-172-31-32-237:/# ls
-    bin   dev docker-entrypoint.sh  home  lib64 media  opt   root  sbin  sys  usr
-    boot  docker-entrypoint.d  etc lib   managed-agents  mnt    proc  run   srv   tmp  var
+        $ aws ecs execute-command  \
+          --region $AWS_REGION \
+          --cluster ecs-exec-demo-cluster \
+          --task ef6260ed8aab49cf926667ab0c52c313 \
+          --container nginx \
+          --command "/bin/bash" \
+          --interactive
+  
+        The Session Manager plugin was installed successfully. Use the AWS CLI to start a session.
+        Starting session with SessionId: ecs-execute-command-0122b68a67f39258e
+        This session is encrypted using AWS KMS.
+        root@ip-172-31-32-237:/# ls
+        bin   dev docker-entrypoint.sh  home  lib64 media  opt   root  sbin  sys  usr
+        boot  docker-entrypoint.d  etc lib   managed-agents  mnt    proc  run   srv   tmp  var
     ```
-    <br />
+  <br />
 1. You can `curl` on the public ip of your container. To know the public ip of your container from `step 14` output you should find the `<eni-id>` which you can substitue in the below command. The below command will show the `public ip` of your container to which you can curl
     ``` shell
     $ aws ec2 describe-network-interfaces --network-interface-ids <eni-id>
@@ -282,6 +282,7 @@ $ export ECS_EXEC_BUCKET_NAME=khaja-aws-ecs-exec-s3-bucket-output-xxxxxxxxxx
     $ aws iam delete-role --role-name ecs-exec-demo-task-role 
     $ aws kms schedule-key-deletion --key-id $KMS_KEY_ARN --region $AWS_REGION
     $ aws ec2 delete-security-group --group-id $ECS_EXEC_DEMO_SG_ID --region $AWS_REGION
+    $ aws kms delete-alias --alias-name alias/ecs-exec-demo-kms-key
     ```
 
 > Note: It's always recommended to double check the resources, if they are properly deleted. If not, do delete them manually. If you find any issues in deleting any resources, raise an AWS ticket immediately and get help from the AWS Support team. 
