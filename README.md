@@ -88,11 +88,12 @@ $ export ECS_EXEC_BUCKET_NAME=khaja-aws-ecs-exec-s3-bucket-output-xxxxxxxxxx
     $ aws iam create-role --role-name ecs-exec-demo-task-role --assume-role-policy-document file://ecs-tasks-trust-policy.json --region $AWS_REGION
     ```
     <br />
-1. Create a policy with the name `ecs-exec-demo-task-role-policy.json`. Some of the variables should be updated in the below policy. Please update them accordingly. 
-    - **<AWS_REGION>**
-    - **<ACCOUNT_ID>**
-    - **<ECS_EXEC_BUCKET_NAME>** (whose value is in the ECS_EXEC_BUCKET_NAME variable)
-    - **<KMS_KEY_ARN>** created above (whose value is in the KMS_KEY_ARN variable)
+1. Create a policy with the name `ecs-exec-demo-task-role-policy.json`. Some of the variables should be updated in the below policy. Please update them accordingly. Attach the default policy `AmazonECSTaskExecutionRolePolicy` to `ecs-exec-demo-task-execution-role` and the the above policy json to the `ecs-exec-demo-task-role` with the json policy name as `ecs-exec-demo-task-role-policy.json` 
+    - For the ECS task role, we have added a custom policy so that it allows the container to open the secure channel session via SSM and log the ECS Exec output to both CloudWatch and S3 (to the LogStream and to the bucket created above). Now, update the following items in the
+      - **<AWS_REGION>**
+      - **<ACCOUNT_ID>**
+      - **<ECS_EXEC_BUCKET_NAME>** (whose value is in the ECS_EXEC_BUCKET_NAME variable)
+      - **<KMS_KEY_ARN>** created above (whose value is in the KMS_KEY_ARN variable)
         ``` json
         {
         "Version": "2012-10-17",
@@ -147,67 +148,6 @@ $ export ECS_EXEC_BUCKET_NAME=khaja-aws-ecs-exec-s3-bucket-output-xxxxxxxxxx
         ]
         }
         ```
-        <br />
-1. Attach the default policy `AmazonECSTaskExecutionRolePolicy` to `ecs-exec-demo-task-execution-role` and the the above policy json to the `ecs-exec-demo-task-role` with the json policy name as `ecs-exec-demo-task-role-policy.json` 
-    - For the ECS task role, we have added a custom policy so that it allows the container to open the secure channel session via SSM and log the ECS Exec output to both CloudWatch and S3 (to the LogStream and to the bucket created above). Now, update the following items in the 
-        - **<AWS_REGION>**
-        - **<ACCOUNT_ID>**
-        - **<ECS_EXEC_BUCKET_NAME>** (whose value is in the ECS_EXEC_BUCKET_NAME variable)
-        - **<KMS_KEY_ARN>** created above (whose value is in the KMS_KEY_ARN variable)
-            ``` json
-            {
-            "Version": "2012-10-17",
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "ssmmessages:CreateControlChannel",
-                        "ssmmessages:CreateDataChannel",
-                        "ssmmessages:OpenControlChannel",
-                        "ssmmessages:OpenDataChannel"
-                    ],
-                    "Resource": "*"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "logs:DescribeLogGroups"
-                    ],
-                    "Resource": "*"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "logs:CreateLogStream",
-                        "logs:DescribeLogStreams",
-                        "logs:PutLogEvents"
-                    ],
-                    "Resource": "arn:aws:logs:<AWS_REGION>:<ACCOUNT_ID>:log-group:/aws/ecs/ecs-exec-demo:*"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "s3:PutObject"
-                    ],
-                    "Resource": "arn:aws:s3:::<ECS_EXEC_BUCKET_NAME>/*"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "s3:GetEncryptionConfiguration"
-                    ],
-                    "Resource": "arn:aws:s3:::<ECS_EXEC_BUCKET_NAME>"
-                },
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "kms:Decrypt"
-                    ],
-                    "Resource": "<KMS_KEY_ARN>"
-                }
-            ]
-            }
-            ```
     <br />
 1. Execute the following AWS CLI commands to bind the policies to the IAM roles.
     ``` shell
